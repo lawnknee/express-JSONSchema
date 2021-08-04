@@ -4,10 +4,8 @@ const AxiosMockAdapter = require("axios-mock-adapter");
 const axios = require("axios");
 const axiosMock = new AxiosMockAdapter(axios);
 
-const {shipProduct, SHIPIT_SHIP_URL, SHIPIT_API_KEY } = 
+const {shipProduct, shipProducts, SHIPIT_SHIP_URL } = 
 require("./shipItApi");
-
-const { response } = require("express");
 
 test("shipProduct", async function () {
 
@@ -19,7 +17,7 @@ test("shipProduct", async function () {
     shipId: 2000
   }};
 
-  axiosMock.onPost(`${SHIPIT_SHIP_URL}`)
+  axiosMock.onPost(SHIPIT_SHIP_URL)
     .reply(201, responseData);
 
     const shipId = await shipProduct({
@@ -31,4 +29,29 @@ test("shipProduct", async function () {
 
   expect(shipId).toEqual(2000);
   expect(responseData.receipt.shipId).toEqual(shipId);
+});
+
+
+test("shipProducts", async function () {
+
+  const responseData = { receipt: {
+    itemIds: [1000, 1001, 1002, 1003],
+    name: "Test Tester",
+    addr: "100 Test St",
+    zip: "12345-6789",
+    shipIds: [2000, 2001, 2002, 2003]
+  }};
+
+  axiosMock.onPost(SHIPIT_SHIP_URL)
+    .reply(201, responseData);
+
+    const shipIds = await shipProducts({
+      productIds: [1000, 1001, 1002, 1003],
+      name: "Test Tester",
+      addr: "100 Test St",
+      zip: "12345-6789",
+    });
+
+  expect(shipIds).toEqual([2000, 2001, 2002, 2003]);
+  expect(responseData.receipt.shipIds).toEqual(shipIds);
 });
